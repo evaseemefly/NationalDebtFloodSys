@@ -9,11 +9,10 @@ class DBConfig:
     """
 
     driver = 'mysql+mysqldb'
-    # host = '127.0.0.1'
     # 宿主机的mysql服务
     host = '172.16.30.163'
     port = '3306'
-    username = 'root'
+    username = 'surge'
     password = db_pwd
     database = 'sys_flood_nationaldebt'
     charset = 'utf8mb4'

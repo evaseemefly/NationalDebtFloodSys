@@ -10,6 +10,8 @@ from sqlalchemy import ForeignKey, Sequence, MetaData, Table
 #
 from datetime import datetime
 
+from urllib.parse import quote_plus
+
 from conf.db_config import DBConfig
 from conf.settings import DATABASES
 
@@ -46,12 +48,14 @@ class DbFactory:
         self.db_name = db_name if db_name else db_options.get('NAME')
         self.user = user if user else db_options.get('USER')
         self.password = pwd if pwd else db_options.get('PASSWORD')
-        # TypeError: Invalid argument(s) 'encoding' sent to create_engine(), using configuration MySQLDialect_mysqldb/QueuePool/Engine.  Please check that the keyword arguments are appropriate for this combination of components.
-        self.engine = create_engine(
-            f"mysql+{self.engine_str}://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}",
-            pool_pre_ping=True, future=True, echo=False, pool_size=config.pool_size,
-            max_overflow=config.max_overflow,
-            pool_recycle=config.pool_recycle, )
+        # TODO:[-] 25-04-23 注意密码中包含@特殊字符需要重新编码，否则会出现特殊字符导致连接字符串出错的bug
+        encoded_passwd = quote_plus(self.password)
+        connect_str: str = f"mysql+{self.engine_str}://{self.user}:{encoded_passwd}@{self.host}:{self.port}/{self.db_name}"
+        self.engine = create_engine(connect_str
+                                    ,
+                                    pool_pre_ping=True, future=True, echo=False, pool_size=config.pool_size,
+                                    max_overflow=config.max_overflow,
+                                    pool_recycle=config.pool_recycle, )
         # TODO:[-] 23-03-03 通过 scoped_session 来提供现成安全的全局session
         # 参考: https://juejin.cn/post/6844904164141580302
         self._session_def = scoped_session(sessionmaker(bind=self.engine))

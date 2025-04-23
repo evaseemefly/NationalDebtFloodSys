@@ -24,9 +24,11 @@ def init_user():
             raise CoverageStoreError()
 
 
-def batch2db():
+def batch2db(user_id: int, group_id: int):
     """
         批量向db写入实例
+    :param user_id: user 表id
+    :param group_id: group 表id
     :return:
     """
 
@@ -62,8 +64,8 @@ def batch2db():
                 session.add(temp_file)
 
             # step3: 写入关系表 并批量更新参考上面 todo
-            relation1 = RelaUserGroupFile(user_id=user1.id, group_id=group1.id, file_id=geo_file1.id, task_id=task.id)
-            relation2 = RelaUserGroupFile(user_id=user1.id, group_id=group1.id, file_id=geo_file2.id, task_id=task.id)
+            relation1 = RelaUserGroupFile(user_id=user_id, group_id=group_id, file_id=geo_file1.id, task_id=task.id)
+            relation2 = RelaUserGroupFile(user_id=user_id, group_id=group_id, file_id=geo_file2.id, task_id=task.id)
             relas: List[RelaUserGroupFile] = [relation1, relation2]
             for temp_rela in relas:
                 session.add(temp_rela)
@@ -80,7 +82,11 @@ def batch2db():
 
 
 def main():
-    batch2db()
+    # 已经初始化创建测试用户及群组不需要再次执行
+    # init_user()
+    default_user_id: int = 1
+    default_group_id: int = 1
+    batch2db(default_user_id, default_group_id)
 
     pass
 
