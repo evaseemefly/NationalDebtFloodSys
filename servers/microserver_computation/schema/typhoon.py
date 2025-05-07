@@ -41,3 +41,15 @@ class TyphoonPointSchema(BaseModel):
 class TyphoonPathSchema(BaseModel):
     # tyId: str
     params: List[TyphoonPointSchema]
+
+
+class TyphoonPathDetail(BaseModel):
+    tyCode: str
+    tyNameCh: str
+    tyNameEn: str
+    timeStamp: int
+
+
+class TyphoonPathComplexSchema(BaseModel):
+    tyDetail: TyphoonPathDetail
+    tyPathList: List[TyphoonPointSchema]
