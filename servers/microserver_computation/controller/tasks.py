@@ -45,3 +45,32 @@ async def get(params: TyphoonPathComplexSchema):
             status_code=500,
             detail=str(e)
         )
+
+
+@app.post('/create/typhoon/surge',
+          summary="获取提交的作业请求")
+async def get(params: TyphoonPathComplexSchema):
+    """
+        根据 ty_code 获取对应台风的路径(实况|预报)
+    :param params:
+    :return:
+    """
+    try:
+        #
+        print(f"Received typhoon path data: {params.dict()}")
+        now_ts = arrow.utcnow().int_timestamp
+        job_dao = TaskDao()
+        job_dao.submit_surge_task(1, params)
+        # 测试——返回提交的数据集
+        return ResponseModel(
+            code=200,
+            message="数据提交成功",
+            data=params.dict()
+        )
+
+    except Exception as e:
+        # 异常处理
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

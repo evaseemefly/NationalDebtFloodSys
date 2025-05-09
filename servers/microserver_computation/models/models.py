@@ -1,10 +1,15 @@
-from sqlalchemy import create_engine, Column, Float, Integer, String, JSON, ForeignKey, Enum, DateTime, Text, Boolean
+from typing import Optional
+
+from sqlalchemy import create_engine, Column, Float, Integer, String, JSON, ForeignKey, Enum, DateTime, Text, Boolean, \
+    UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
+from common.default import DEFAULT_PATH, DEFAULT_NAME, DEFAULT_ENUM, NONE_ID, DEFAULT_CODE
 from common.enums import TaskStatusEnum
+from models.base_model import IDel, IForecastTime, IModel, IIdIntModel, IReleaseTime, IIssueTime
 
 Base = declarative_base()
 
@@ -13,6 +18,7 @@ class TaskJobs(Base):
     __tablename__ = 'task_jobs'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    ty_code: Mapped[str] = mapped_column(default=DEFAULT_CODE)
     task_name = Column(String(255), nullable=False)
     parameters = Column(JSON, nullable=False)
     status = Column(Integer, default=TaskStatusEnum.pending.value)
@@ -22,23 +28,23 @@ class TaskJobs(Base):
     error_message = Column(Text)
 
 
-class GeoCoverageFiles(Base):
+class ICoverageFileModel(Base):
+    __abstract__ = True
+    relative_path: Mapped[str] = mapped_column(String(50), default=DEFAULT_PATH)
+    file_name: Mapped[str] = mapped_column(String(100), default=DEFAULT_NAME)
+
+
+class GeoCoverageFiles(IDel, IIdIntModel, ICoverageFileModel, IForecastTime, IIssueTime, IModel):
+    """
+
+    """
     __tablename__ = 'geo_coverage_files'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    pid = Column(Integer, nullable=False)
-    is_del = Column(Integer, nullable=False)
-    forecast_dt = Column(DateTime)
-    forecast_ts = Column(Integer, nullable=False)
-    issue_dt = Column(DateTime)
-    issue_ts = Column(Integer)
-    relative_path = Column(String(50), nullable=False)
-    file_name = Column(String(100), nullable=False)
-    file_ext = Column(String(50), nullable=False)
-    coverage_type = Column(Integer, nullable=False)
-    gmt_create_time = Column(DateTime, default=datetime.utcnow)
-    gmt_modify_time = Column(DateTime)
-    task_id = Column(Integer, ForeignKey('task_jobs.id'), nullable=False)
+    coverage_type: Mapped[int] = mapped_column(default=DEFAULT_ENUM)
+    """预报产品类型"""
+
+    task_id: Mapped[int] = mapped_column(default=NONE_ID)
+    ty_code: Mapped[str] = mapped_column(default=DEFAULT_CODE)
 
 
 class AuthUser(Base):
@@ -60,15 +66,46 @@ class AuthGroup(Base):
     gmt_modify_time = Column(DateTime, default=datetime.utcnow)
 
 
-class RelaUserGroupFile(Base):
-    __tablename__ = 'rela_user_group_file'
+class RelaTaskFiles(Base):
+    __tablename__ = 'rela_task_files'
+    __table_args__ = {'schema': 'sys_flood_nationaldebt'}
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('auth_user.id'), nullable=False)
-    group_id = Column(Integer, ForeignKey('auth_group.id'), nullable=False)
-    file_id = Column(Integer, ForeignKey('geo_coverage_files.id'), nullable=False)
-    file_type = Column(Integer)
-    task_id = Column(Integer, ForeignKey('task_jobs.id'))
+    # 主键
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    # 外键字段
+    file_id: Mapped[int] = mapped_column(ForeignKey('geo_coverage_files.id'), nullable=False)
+    file_type: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    task_id: Mapped[Optional[int]] = mapped_column(ForeignKey('task_jobs.id'), nullable=True)
+
+    # 关系定义
+    file: Mapped["GeoCoverageFiles"] = relationship("GeoCoverageFiles")
+    task: Mapped[Optional["TaskJobs"]] = relationship("TaskJobs")
+
+
+class RelaGroupPathTask(Base):
+    __tablename__ = 'rela_grouppath_task'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    task_id: Mapped[int] = mapped_column(
+        ForeignKey('task_jobs.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True
+    )
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey('typhoon_forecast_grouppath.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True
+    )
+
+    # 关系定义
+    task: Mapped["TaskJobs"] = relationship("TaskJobs", back_populates="group_paths")
+    group: Mapped["TyphoonForecastGrouppath"] = relationship("TyphoonForecastGrouppath", back_populates="task_paths")
+
+    # 添加复合唯一约束，防止重复关联
+    __table_args__ = (
+        UniqueConstraint('task_id', 'group_id', name='uq_task_group'),
+    )
 
 
 class TyphoonForecastDetailinfo(Base):
