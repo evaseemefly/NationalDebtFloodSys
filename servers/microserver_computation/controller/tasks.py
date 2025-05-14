@@ -13,6 +13,7 @@ from core.jobs import JobGenerateTyphoonPathFile
 from dao.jobs import TaskDao
 from models.mid_models import TyDetailMidModel, TyPathMidModel
 from schema.common import ResponseModel
+from schema.task import TyGroupTaskSchema
 from schema.typhoon import TyphoonPathSchema, TyphoonPathComplexSchema
 
 app = APIRouter()
@@ -74,3 +75,29 @@ async def get(params: TyphoonPathComplexSchema):
             status_code=500,
             detail=str(e)
         )
+
+
+@app.get('/get/task/list', response_model=List[TyGroupTaskSchema],
+         summary="爬取中央气象台的台风路径")
+def get(code: str):
+    """
+        获取台风对应的任务列表
+        TODO:[*] 25-05-13 此处需要修改 url 为 group/list 目前不从 task 获取对应的 group
+    @param code:
+    @return:
+    """
+    job_dao = TaskDao()
+    # issue_ts: int = 1747125125
+    res = job_dao.get_task_list(code)
+    return res
+
+
+@app.get('/get/grouppath/list', response_model=List[TyGroupTaskSchema],
+         summary="爬取中央气象台的台风路径")
+def get(code: str, issue_ts: int):
+    """
+        根据 台风编号获取集合路径的 发布时间戳以及code等集合
+    @param code:
+    @param issue_ts:
+    @return:
+    """

@@ -75,7 +75,7 @@ class DbFactory:
 
 
 @contextmanager
-def session_yield_scope():
+def session_yield_scope() -> scoped_session:
     """
         [-] 24-08-26 基于事物的Session会话管理
     """

@@ -1,6 +1,8 @@
 # 一些常用的用户代理
 from random import randint
 
+from sqlalchemy.orm import scoped_session
+
 from db.db import session_yield_scope
 from db.db_factory import DBFactory
 
@@ -38,5 +40,5 @@ class BaseDao:
     """
 
     def __init__(self):
-        self.session = session_yield_scope()
+        self.session: scoped_session = session_yield_scope()
         pass

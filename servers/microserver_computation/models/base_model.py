@@ -48,5 +48,5 @@ class IReleaseTime(BaseMeta):
 
 class IForecastTime(BaseMeta):
     __abstract__ = True
-    forecast_time: Mapped[datetime] = mapped_column(default=datetime.utcnow().date())
+    forecast_dt: Mapped[datetime] = mapped_column(default=datetime.utcnow().date())
     forecast_ts: Mapped[int] = mapped_column(default=Arrow.utcnow().int_timestamp)

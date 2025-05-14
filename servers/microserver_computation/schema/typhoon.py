@@ -29,6 +29,14 @@ from pydantic import BaseModel, Field
 #         }
 #
 
+class TyphoonDistGroupSchema(BaseModel):
+    tyCode: str
+    timestamp: int
+
+    class Config:
+        orm_mode = True  # 旧版本
+
+
 class TyphoonPointSchema(BaseModel):
     forecastDt: datetime
     lat: float
@@ -51,5 +59,7 @@ class TyphoonPathDetail(BaseModel):
 
 
 class TyphoonPathComplexSchema(BaseModel):
-    tyDetail: TyphoonPathDetail
+    tyCode: str
+    issueTs: int
+    groupType: str
     tyPathList: List[TyphoonPointSchema]

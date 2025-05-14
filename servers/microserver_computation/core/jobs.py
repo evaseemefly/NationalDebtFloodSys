@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session, Session
 
 from common.default import DEFAULT_RELATIVE_PATH, MS_UNIT
 from common.enums import TyphoonForecastInstitutionEnum, RasterFileType, TyphoonGroupEnum, NullEnum
+from common.util import get_ty_group_enum
 from config.store import STORE_CONFIG
 from core.transformers import SurgeTransformer
 from models.mid_models import TyForecastRealDataMidModel, ForecastSurgeRasterFile
@@ -228,14 +229,15 @@ class JobGenerateSurgeRasterPathFile:
         """
         coverage_files: List[ForecastSurgeRasterFile] = []
         files = self.get_path_files()
-        switch_dict = {'center': TyphoonGroupEnum.GROUP_CENTER,
-                       'fast': TyphoonGroupEnum.GROUP_FAST,
-                       'slow': TyphoonGroupEnum.GROUP_SLOW,
-                       'left': TyphoonGroupEnum.GROUP_LEFT,
-                       'right': TyphoonGroupEnum.GROUP_RIGHT}
+        # switch_dict = {'center': TyphoonGroupEnum.GROUP_CENTER,
+        #                'fast': TyphoonGroupEnum.GROUP_FAST,
+        #                'slow': TyphoonGroupEnum.GROUP_SLOW,
+        #                'left': TyphoonGroupEnum.GROUP_LEFT,
+        #                'right': TyphoonGroupEnum.GROUP_RIGHT}
         for temp_file in files:
             temp_group_type_str: str = temp_file.name.split('.')[0].split('_')[1]
-            temp_group_type: TyphoonGroupEnum = switch_dict.get(temp_group_type_str, NullEnum.NULL)
+            # temp_group_type: TyphoonGroupEnum = switch_dict.get(temp_group_type_str, NullEnum.NULL)
+            temp_group_type: TyphoonGroupEnum = get_ty_group_enum(temp_group_type_str)
             """当前文件的集合路径枚举"""
             temp_relative_path: str = self.relative_path
             temp_coverage_file: ForecastSurgeRasterFile = ForecastSurgeRasterFile(RasterFileType.NETCDF, self.timestamp,
@@ -295,9 +297,10 @@ class JobGenerateSurgeRasterPathFile:
         for temp_coverage in list_geo_coverages:
             session.add(temp_coverage)
             session.flush()
+            # TODO:[*] 25-05-13 暂时不写入关联表
             # 写入关联表
-            relation = RelaTaskFiles(task_id=task_job.id, file_id=temp_coverage.id, file_type=coverage_type.value)
-            session.add(relation)
+            # relation = RelaTaskFiles(task_id=task_job.id, file_id=temp_coverage.id, file_type=coverage_type.value)
+            # session.add(relation)
         session.commit()
         pass
 
@@ -322,11 +325,18 @@ class JobGenerateSurgeRasterPathFile:
                              coverage_type=coverage_type.value) for temp in
             coverage_files]
         for temp_coverage in list_geo_coverages:
+            """
+                + 25-05-13
+                (MySQLdb._exceptions.OperationalError) (1054, "Unknown column 'forecast_time' in 'field list'")
+                [SQL: INSERT INTO geo_coverage_files (coverage_type, task_id, ty_code, is_del, relative_path, file_name, forecast_time, forecast_ts, issue_dt, issue_ts, gmt_create_time, gmt_modify_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)]
+                [parameters: (6101, -1, 'DEFAULT', 0, 'user1/surge_path/2025/2106/1746777768768', 'zmax_center.dat.nc', datetime.date(2025, 5, 13), 1747118753, <Arrow [2025-05-13T06:33:16.666000+00:00]>, 1747117996666, datetime.datetime(2025, 5, 13, 6, 48, 5, 151547), datetime.datetime(2025, 5, 13, 6, 48, 5, 151547))]
+                (Background on this error at: https://sqlalche.me/e/20/e3q8)
+            """
             session.add(temp_coverage)
             session.flush()
-            # 写入关联表
-            relation = RelaTaskFiles(task_id=task_job.id, file_id=temp_coverage.id, file_type=coverage_type.value)
-            session.add(relation)
+            # # TODO:[*] 25-05-13 暂时不写入关联表
+            # relation = RelaTaskFiles(task_id=task_job.id, file_id=temp_coverage.id, file_type=coverage_type.value)
+            # session.add(relation)
         session.commit()
         pass
 
@@ -339,6 +349,7 @@ class JobGenerateSurgeRasterPathFile:
         """
         issue_ts: int = kwargs.get('issue_ts')
         files: List[pathlib.Path] = self.get_path_files()
+
         coverage_files: List[ForecastSurgeRasterFile] = self.get_coveragefiles()
         """当前路径下的所有栅格文件集合(只包含nc文件)"""
         # 获取对应的 task_jobs

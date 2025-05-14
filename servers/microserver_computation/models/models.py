@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import create_engine, Column, Float, Integer, String, JSON, ForeignKey, Enum, DateTime, Text, Boolean, \
     UniqueConstraint
@@ -18,14 +18,17 @@ class TaskJobs(Base):
     __tablename__ = 'task_jobs'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    ty_code: Mapped[str] = mapped_column(default=DEFAULT_CODE)
-    task_name = Column(String(255), nullable=False)
     parameters = Column(JSON, nullable=False)
     status = Column(Integer, default=TaskStatusEnum.pending.value)
     duration = Column(Integer)
     gmt_submit_time = Column(DateTime, default=datetime.utcnow)
     gmt_completed_time = Column(DateTime)
     error_message = Column(Text)
+    ty_code: Mapped[str] = mapped_column(default=DEFAULT_CODE)
+    issue_ts: Mapped[int] = mapped_column(default=0)
+
+    # 添加这个关系定义
+    group_paths: Mapped[List["RelaGroupPathTask"]] = relationship("RelaGroupPathTask", back_populates="task")
 
 
 class ICoverageFileModel(Base):
@@ -84,6 +87,10 @@ class RelaTaskFiles(Base):
 
 
 class RelaGroupPathTask(Base):
+    """
+        Foreign key associated with column 'rela_grouppath_task.
+        group_id' could not find table 'typhoon_forecast_grouppath' with which to generate a foreign key to target column 'id'
+    """
     __tablename__ = 'rela_grouppath_task'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -93,12 +100,16 @@ class RelaGroupPathTask(Base):
         index=True
     )
     group_id: Mapped[int] = mapped_column(
-        ForeignKey('typhoon_forecast_grouppath.id', ondelete='CASCADE'),
+        ForeignKey('sys_flood_nationaldebt.typhoon_forecast_grouppath.id', ondelete='CASCADE'),
         nullable=False,
         index=True
     )
 
     # 关系定义
+    # TODO:[*] 25-05-12
+    #  Mapper 'Mapper[TaskJobs(task_jobs)]' has no property 'group_paths'.
+    #  If this property was indicated from other mappers or configure events,
+    #  ensure registry.configure() has been called.
     task: Mapped["TaskJobs"] = relationship("TaskJobs", back_populates="group_paths")
     group: Mapped["TyphoonForecastGrouppath"] = relationship("TyphoonForecastGrouppath", back_populates="task_paths")
 
@@ -145,6 +156,9 @@ class TyphoonForecastGrouppath(Base):
     relative_path = Column(String(500), nullable=False)
     timestamp: Mapped[int] = mapped_column(default=0)
     ty_path_type = Column(String(3), nullable=False)
+
+    # 添加这个关系定义
+    task_paths: Mapped[List["RelaGroupPathTask"]] = relationship("RelaGroupPathTask", back_populates="group")
 
     def __repr__(self):
         return f"<TyphoonForecastGrouppath(id={self.id}, ty_code={self.ty_code})>"

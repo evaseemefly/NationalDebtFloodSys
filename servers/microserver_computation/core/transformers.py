@@ -9,8 +9,9 @@ import xarray as xr
 import rioxarray
 
 from common.default import NONE_ID
-from common.enums import ElementTypeEnum, RasterFileType
+from common.enums import ElementTypeEnum, RasterFileType, TyphoonGroupEnum
 from common.exceptions import FileDontExists, FileReadError, FileTransformError
+from common.util import get_ty_group_enum
 from models.mid_models import IForecastProductFile, ForecastSurgeRasterFile
 
 
@@ -72,14 +73,17 @@ class SurgeTransformer:
         if self._ds is not None:
             try:
                 file_splits = self.file.file_name.split('.')[:2]
+                temp_group_type_str: str = self.file.file_name.split('.')[0].split('_')[1]
+                temp_group_type: TyphoonGroupEnum = get_ty_group_enum(temp_group_type_str)
+                """当前文件的 集合路径类型枚举"""
                 file_splits.append('tif')
                 transformer_file_name: str = '.'.join(file_splits)
                 out_put_file_path: str = str(pathlib.Path(
                     self.file.local_root_path) / self.file.relative_path / transformer_file_name)
                 self._ds.rio.to_raster(out_put_file_path, diver=diver, compress=compress)
-                raster_file = ForecastSurgeRasterFile(raster_type, transformer_file_name,
+                raster_file = ForecastSurgeRasterFile(raster_type, self.file.issue_ts, transformer_file_name,
                                                       self.file.relative_path,
-                                                      self.file.local_root_path)
+                                                      self.file.local_root_path, temp_group_type)
             except Exception as e:
                 raise FileTransformError()
         return raster_file
