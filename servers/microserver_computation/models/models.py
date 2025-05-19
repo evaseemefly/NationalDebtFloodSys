@@ -46,6 +46,10 @@ class GeoCoverageFiles(IDel, IIdIntModel, ICoverageFileModel, IForecastTime, IIs
     coverage_type: Mapped[int] = mapped_column(default=DEFAULT_ENUM)
     """预报产品类型"""
 
+    group_type: Mapped[int] = mapped_column(default=DEFAULT_ENUM)
+    """group path 路径枚举对应的value"""
+    # group_id: Mapped[int] = mapped_column(default=NONE_ID)
+    # """对应grouppath表的id"""
     task_id: Mapped[int] = mapped_column(default=NONE_ID)
     ty_code: Mapped[str] = mapped_column(default=DEFAULT_CODE)
 

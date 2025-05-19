@@ -9,7 +9,7 @@ from sqlalchemy.orm import scoped_session, Session
 from common.default import DEFAULT_RELATIVE_PATH, MS_UNIT
 from common.enums import TyphoonForecastInstitutionEnum, RasterFileType, TyphoonGroupEnum, NullEnum
 from common.util import get_ty_group_enum
-from config.store import STORE_CONFIG
+from config.store_config import STORE_CONFIG
 from core.transformers import SurgeTransformer
 from models.mid_models import TyForecastRealDataMidModel, ForecastSurgeRasterFile
 from models.models import TyphoonForecastDetailinfo, TyphoonForecastGrouppath, TyphoonForecastRealdata, \

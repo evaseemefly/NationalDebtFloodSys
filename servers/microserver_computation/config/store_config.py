@@ -7,7 +7,8 @@ STORE_CONFIG = {
 
 
 class StoreConfig:
-    ip = 'http://192.168.0.109:82'
+    # ip = 'http://192.168.0.109:82'
+    ip = 'http://localhost:82'
 
     store_relative_path: str = 'images/GD_FLOOD'
 

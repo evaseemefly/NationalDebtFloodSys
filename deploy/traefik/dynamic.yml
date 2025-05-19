@@ -20,6 +20,11 @@ http:
       service: task-service
       entryPoints:
         - web
+    coverage-router:
+      rule: "PathPrefix(`/coverage`)" # 匹配 /station 路由
+      service: task-service
+      entryPoints:
+        - web
 
   services:
     typhoon-service:
