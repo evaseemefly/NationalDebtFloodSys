@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
 from pydantic import ValidationError
 
 from common.default import DEFAULT_CODE
+from common.enums import TyphoonGroupEnum
 from common.exceptions import NoExistTargetTyphoon
 from core.jobs import JobGenerateTyphoonPathFile
 from dao.jobs import TaskDao
@@ -53,8 +54,33 @@ async def get(ty_code: str, issue_ts):
     """
     try:
         #
+
         typhoon_dao = TyphoonDao()
         res = typhoon_dao.get_grouppath_list(ty_code, issue_ts)
+        return res
+
+    except Exception as e:
+        # 异常处理
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
+@app.get('/typhoon/grouppath/detail/list',
+         summary="根据台风编号以及发布时间戳获取5中集合路径的信息", response_model=List[TyphoonPathComplexSchema])
+async def get(ty_code: str, issue_ts):
+    """
+        获取指定case的5种集合路径信息
+    @param ty_code:
+    @param issue_ts:
+    @return:
+    """
+    try:
+        #
+
+        typhoon_dao = TyphoonDao()
+        res = typhoon_dao.get_dist_grouppath_list(ty_code, issue_ts)
         return res
 
     except Exception as e:

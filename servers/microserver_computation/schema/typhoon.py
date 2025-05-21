@@ -62,4 +62,5 @@ class TyphoonPathComplexSchema(BaseModel):
     tyCode: str
     issueTs: int
     groupType: str
-    tyPathList: List[TyphoonPointSchema]
+    taskId: Optional[int]
+    tyPathList: Optional[List[TyphoonPointSchema]]

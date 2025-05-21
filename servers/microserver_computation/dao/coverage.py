@@ -14,8 +14,8 @@ from schema.typhoon import TyphoonPathComplexSchema, TyphoonDistGroupSchema, Typ
 
 
 class BaseCoverageDao(BaseDao):
-    def get_coveage_file_byparams(self, ty_code: str, task_id: int, raster_type: RasterFileType,
-                                  group_type: TyphoonGroupEnum, issue_ts: int,
+    def get_coveage_file_byparams(self, ty_code: str, issue_ts: int, raster_type: RasterFileType,
+                                  group_type: TyphoonGroupEnum,
                                   **kwargs) -> Optional[CoverageFileInfoSchema]:
         """
             根据 预报 | 发布 时间戳 获取对应的 nc | tif 文件信息
@@ -29,7 +29,7 @@ class BaseCoverageDao(BaseDao):
             with self.session as session:
                 stmt = select(GeoCoverageFiles).where(
                     GeoCoverageFiles.ty_code == ty_code,
-                    GeoCoverageFiles.task_id == task_id,
+                    GeoCoverageFiles.issue_ts == issue_ts,
                     GeoCoverageFiles.coverage_type == raster_type.value,
                     GeoCoverageFiles.group_type == group_type.value
                 )
@@ -43,7 +43,7 @@ class BaseCoverageDao(BaseDao):
 
 
 class CoverageDao(BaseCoverageDao):
-    def get_tif_file_url(self, ty_code: str, task_id: int,
+    def get_tif_file_url(self, ty_code: str, issue_ts: int, group_type: TyphoonGroupEnum,
                          coverage_type: RasterFileType = RasterFileType.GEOTIFF, **kwargs) -> str:
         """
             根据 code + task_id 获取对应的 tiff 文件
@@ -56,8 +56,8 @@ class CoverageDao(BaseCoverageDao):
         @return:
         """
         full_url: str = ''
-        file_info: CoverageFileInfoSchema = self.get_coveage_file_byparams(ty_code, task_id, coverage_type,
-                                                                           TyphoonGroupEnum.GROUP_CENTER, issue_ts=0)
+        file_info: CoverageFileInfoSchema = self.get_coveage_file_byparams(ty_code, issue_ts, coverage_type,
+                                                                           group_type)
         if file_info is not None:
             full_url = get_remote_url(file_info)
 

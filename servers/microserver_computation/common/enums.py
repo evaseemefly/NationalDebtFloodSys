@@ -40,6 +40,10 @@ class RasterFileType(Enum):
     GEOTIFF = 6102
     """geotiff"""
 
+    @classmethod
+    def _missing_(cls, value):
+        return cls.GEOTIFF  # 设定默认值为 GEOTIFF
+
 
 @unique
 class TyphoonForecastInstitutionEnum(Enum):
@@ -58,3 +62,7 @@ class TyphoonGroupEnum(Enum):
     GROUP_FAST = 4103
     GROUP_RIGHT = 4104
     GROUP_LEFT = 4105
+
+    @classmethod
+    def _missing_(cls, value):
+        return cls.GROUP_CENTER  # 设定默认值为 CENTER

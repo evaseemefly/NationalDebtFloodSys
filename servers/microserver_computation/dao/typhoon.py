@@ -3,6 +3,7 @@ from typing import List, Optional, Any
 from sqlalchemy import distinct, select
 
 from common.default import MS_UNIT
+from common.enums import TyphoonGroupEnum
 from core.jobs import JobGenerateTyphoonPathFile, JobGenerateSurgeRasterPathFile
 from dao.base import BaseDao
 from models.models import TyphoonForecastGrouppath, TyphoonForecastRealdata
@@ -35,7 +36,8 @@ class TyphoonDao(BaseDao):
             print(ex)
         pass
 
-    def get_grouppath_list(self, ty_code: str, issue_ts: int) -> List[TyphoonPathComplexSchema]:
+    def get_grouppath_list(self, ty_code: str, issue_ts: int) -> List[
+        TyphoonPathComplexSchema]:
         """
             step1: code,issue_ts -> grouppath 集合
             step2: foreach grouppath -> 对应 ty_realdata 集合
@@ -67,7 +69,7 @@ class TyphoonDao(BaseDao):
                                                                                   tyType=temp_group.ty_path_type)
                         temp_group_path_list.append(temp_path_schema)
                     temp_group_schema: TyphoonPathComplexSchema = TyphoonPathComplexSchema(tyCode=ty_code,
-                                                                                           issueTs=temp_path.timestamp,
+                                                                                           issueTs=temp_group.timestamp,
                                                                                            groupType=temp_group.ty_path_type,
                                                                                            tyPathList=temp_group_path_list)
                     list_group_schema.append(temp_group_schema)
@@ -77,3 +79,25 @@ class TyphoonDao(BaseDao):
         except Exception as ex:
             print(ex)
         pass
+
+    def get_dist_grouppath_list(self, ty_code: str, issue_ts: int) -> List[TyphoonPathComplexSchema]:
+        """
+            获取指定台风案例创建的5个集合路径
+        @param ty_code:
+        @param issue_ts:
+        @return:
+        """
+        list_group_schema: List[TyphoonPathComplexSchema] = []
+        try:
+            with self.session as session:
+                # step1:
+                groups_stmt = select(TyphoonForecastGrouppath).where(TyphoonForecastGrouppath.ty_code == ty_code,
+                                                                     TyphoonForecastGrouppath.timestamp == issue_ts)
+                group_query: List[TyphoonForecastGrouppath] = session.execute(groups_stmt).scalars().all()
+                list_group_schema = [
+                    TyphoonPathComplexSchema(tyCode=temp.ty_code, issueTs=issue_ts, groupType=temp.ty_path_type) for
+                    temp in group_query]
+            pass
+        except Exception as ex:
+            print(ex)
+        return list_group_schema
