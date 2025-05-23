@@ -189,3 +189,23 @@ class TyphoonForecastRealdata(Base):
 
     def __repr__(self):
         return f"<TyphoonForecastRealdata(id={self.id}, ty_id={self.ty_id})>"
+
+
+class StationInfo(Base):
+    __tablename__ = "station_info"
+    __table_args__ = {"schema": "sys_flood_nationaldebt"}
+
+    station_name: Mapped[Optional[str]] = mapped_column(String(10))
+    station_code: Mapped[Optional[str]] = mapped_column(String(10))
+    lat: Mapped[Optional[float]] = mapped_column(Float)
+    lon: Mapped[Optional[float]] = mapped_column(Float)
+    desc: Mapped[Optional[str]] = mapped_column(String(500))
+    is_abs: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    pid: Mapped[Optional[int]] = mapped_column(Integer)
+    is_in_common_use: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    sort: Mapped[Optional[int]] = mapped_column(Integer)
+    rid: Mapped[Optional[int]] = mapped_column(Integer)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    is_del: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    gmt_create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(6))
+    gmt_modify_time: Mapped[Optional[datetime]] = mapped_column(DateTime(6))
