@@ -1,11 +1,13 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
+from arrow import Arrow
 from sqlalchemy import create_engine, Column, Float, Integer, String, JSON, ForeignKey, Enum, DateTime, Text, Boolean, \
-    UniqueConstraint
+    UniqueConstraint, func, Text, Index
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 from sqlalchemy.orm import mapped_column, Mapped, relationship
+from geoalchemy2 import Geometry
 
 from common.default import DEFAULT_PATH, DEFAULT_NAME, DEFAULT_ENUM, NONE_ID, DEFAULT_CODE
 from common.enums import TaskStatusEnum
@@ -209,3 +211,44 @@ class StationInfo(Base):
     is_del: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     gmt_create_time: Mapped[Optional[datetime]] = mapped_column(DateTime(6))
     gmt_modify_time: Mapped[Optional[datetime]] = mapped_column(DateTime(6))
+
+
+class GeoPolygon(Base):
+    """存储 GeoJSON 多边形数据的模型"""
+
+    __tablename__ = "geo_polygons"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    value: Mapped[float] = mapped_column(Float, comment="增水值")
+    ty_code: Mapped[str] = mapped_column(String(50), nullable=False, index=True, comment="台风编号")
+    name: Mapped[Optional[str]] = mapped_column(String(100), comment="多边形名称")
+    description: Mapped[Optional[str]] = mapped_column(Text, comment="描述信息")
+    properties: Mapped[Optional[str]] = mapped_column(Text, comment="GeoJSON properties 的 JSON 字符串")
+    geom: Mapped[Any] = mapped_column(Geometry("POLYGON", srid=4326), nullable=False, comment="多边形几何数据")
+    # geom: Mapped[Any] = mapped_column(Geometry("POLYGON", srid=4326, spatial_index=True,
+    #                                            from_text='ST_GeomFromText',
+    #                                            name='mysql'),
+    #                                   nullable=False,
+    #                                   comment="多边形几何数据")
+    gmt_create_time: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow(),
+        comment="创建时间"
+    )
+    gmt_update_time: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow(),
+        onupdate=func.current_timestamp(),
+        comment="更新时间"
+    )
+
+    issue_time: Mapped[int] = mapped_column(default=Arrow.utcnow().int_timestamp,
+                                            comment="发布时间")
+
+    # 定义索引
+    __table_args__ = (
+        Index("idx_created_at", "gmt_create_time"),
+        Index("idx_updated_at", "gmt_update_time"),
+        {"mysql_engine": "InnoDB", "mysql_charset": "utf8mb4", "mysql_collate": "utf8mb4_unicode_ci"}
+    )
+
+    def __repr__(self) -> str:
+        return f"<GeoPolygon(id={self.id}, ty_code='{self.ty_code}', gp_id='{self.gp_id}')>"

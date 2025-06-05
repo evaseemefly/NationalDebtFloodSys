@@ -67,3 +67,19 @@ async def get(ty_code: str, issue_ts: int, group: TyphoonGroupEnum = TyphoonGrou
             status_code=500,
             detail=str(e)
         )
+
+
+@app.get('/flood/grid/url',
+         summary="漫滩预报淹没范围", response_model=str)
+async def get(ty_code: str, issue_ts: int):
+    try:
+        # TODO:[*]
+        geotiff_url: str = 'http://localhost:82/images/TYPHOON\data/user1/flood_path/2025/2106/1746777768768/output.tif'
+        return geotiff_url
+
+    except Exception as e:
+        # 异常处理
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

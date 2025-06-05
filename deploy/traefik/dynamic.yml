@@ -15,13 +15,18 @@ http:
       service: task-service
       entryPoints:
         - web
+    coverage-router:
+      rule: "PathPrefix(`/coverage`)" # 匹配 /station 路由
+      service: task-service
+      entryPoints:
+        - web
     flood-router:
       rule: "PathPrefix(`/flood`)" # 匹配 /station 路由
       service: task-service
       entryPoints:
         - web
-    coverage-router:
-      rule: "PathPrefix(`/coverage`)" # 匹配 /station 路由
+    geo-router:
+      rule: "PathPrefix(`/geo`)" # 匹配 /station 路由
       service: task-service
       entryPoints:
         - web
