@@ -11,3 +11,10 @@ class TYGroupTypeEnum(Enum):
     FAST = 4103
     RIGHT = 4104
     LEFT = 4105
+
+
+@unique
+class FloodLevelEnum(Enum):
+    GTE100 = 4201
+    GTE150 = 4202
+    GTE200 = 4203

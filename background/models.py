@@ -6,6 +6,8 @@ from geoalchemy2 import Geometry
 from datetime import datetime
 from typing import Optional, Any
 
+from commons.enums import FloodLevelEnum
+
 
 class Base(DeclarativeBase):
     pass
@@ -56,10 +58,39 @@ class StationForecastRealdataModel(Base):
                 f"station_code={self.station_code}, forecast_dt={self.forecast_dt})")
 
 
+class GeoFloodLevelPolygon(Base):
+    __tablename__ = "geo_floodlevel_polygon"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    value: Mapped[float] = mapped_column(Float, comment="增水值")
+    ty_code: Mapped[str] = mapped_column(String(50), nullable=False, index=True, comment="台风编号")
+    name: Mapped[Optional[str]] = mapped_column(String(100), comment="多边形名称")
+    description: Mapped[Optional[str]] = mapped_column(Text, comment="描述信息")
+    properties: Mapped[Optional[str]] = mapped_column(Text, comment="GeoJSON properties 的 JSON 字符串")
+    geom: Mapped[Any] = mapped_column(Geometry("POLYGON", srid=4326), nullable=False, comment="多边形几何数据")
+    flood_level: Mapped[int] = mapped_column(Integer, comment="淹没等级——枚举", default=FloodLevelEnum.GTE100.value)
+    gmt_create_time: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow(),
+        comment="创建时间"
+    )
+    gmt_update_time: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow(),
+        onupdate=func.current_timestamp(),
+        comment="更新时间"
+    )
+
+    issue_time: Mapped[int] = mapped_column(default=Arrow.utcnow().int_timestamp,
+                                            comment="发布时间")
+
+    def __repr__(self) -> str:
+        return f"<GeoFloodLevelPolygon(id={self.id}, ty_code='{self.ty_code}', gp_id='{self.gp_id}')>"
+
+
 class GeoPolygon(Base):
     """存储 GeoJSON 多边形数据的模型"""
 
     __tablename__ = "geo_polygons"
+    __table_args__ = {"extend_existing": True}  # 允许扩展已定义的表
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     value: Mapped[float] = mapped_column(Float, comment="增水值")
@@ -83,11 +114,11 @@ class GeoPolygon(Base):
                                             comment="发布时间")
 
     # 定义索引
-    __table_args__ = (
-        Index("idx_created_at", "gmt_create_time"),
-        Index("idx_updated_at", "gmt_update_time"),
-        {"mysql_engine": "InnoDB", "mysql_charset": "utf8mb4", "mysql_collate": "utf8mb4_unicode_ci"}
-    )
+    # __table_args__ = (
+    #     Index("idx_created_at", "gmt_create_time"),
+    #     Index("idx_updated_at", "gmt_update_time"),
+    #     {"mysql_engine": "InnoDB", "mysql_charset": "utf8mb4", "mysql_collate": "utf8mb4_unicode_ci"}
+    # )
 
     def __repr__(self) -> str:
         return f"<GeoPolygon(id={self.id}, ty_code='{self.ty_code}', gp_id='{self.gp_id}')>"

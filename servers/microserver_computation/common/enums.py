@@ -53,6 +53,19 @@ class TyphoonForecastInstitutionEnum(Enum):
     CMA = 201
 
 
+@unique
+class FloodAreaLevelEnum(Enum):
+    """
+        淹没等级枚举类
+    """
+    GTE100 = 4201
+    """大于100"""
+    GTE150 = 4202
+    """大于150"""
+    GTE200 = 4203
+    """大于200"""
+
+
 class TyphoonGroupEnum(Enum):
     """
         台风集合路径枚举
