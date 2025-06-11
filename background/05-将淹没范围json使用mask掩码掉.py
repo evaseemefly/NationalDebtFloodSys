@@ -22,7 +22,8 @@ def mask_polygon(forecast_file: str, mask_file: str):
 
 
 def main():
-    flood_forecast_file: str = r'C:\Users\evase\Documents\qgis\data\宁波_国债\geojson_file_center_sparse.json'
+    # flood_forecast_file: str = r'C:\Users\evase\Documents\qgis\data\宁波_国债\geojson_file_center_sparse.json'
+    flood_forecast_file: str = r'E:\01data\99test\flood_geo\surgeflood.max.2019080905_2019081020.json'
     mask_file: str = r'E:\02data\02-qigs_data\01-ningbo\宁波_陆地及海洋外边界_不含岛屿_面.shp'
     mask_polygon(flood_forecast_file, mask_file)
     pass

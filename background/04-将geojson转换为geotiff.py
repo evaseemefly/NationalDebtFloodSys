@@ -62,8 +62,8 @@ def convert_2_tiff(read_path: str, out_put_path: str):
 
 
 def main():
-    read_path: str = r'./geo_a_processed.json'
-    out_put: str = r'E:\01data\99test\flood_geo\output_processed.tif'
+    read_path: str = r'E:\01data\99test\flood_geo\ningbo_test_250611_masked.json'
+    out_put: str = r'E:\01data\99test\flood_geo\ningbo_test_250611_masked.tif'
     convert_2_tiff(read_path, out_put)
     pass
 
